@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kalkulačka VZT – potrubí a mřížky</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#1b1f24;--mut:#667085;--bd:#d8dde4;--ac:#1f6feb;--acbg:#e8f0fe;--warn:#b42318;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171c;--card:#1d2127;--tx:#e8eaed;--mut:#9aa3af;--bd:#343a43;--ac:#6ea8fe;--acbg:#1e2d47;--warn:#f97066;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14171c;--card:#1d2127;--tx:#e8eaed;--mut:#9aa3af;--bd:#343a43;--ac:#6ea8fe;--acbg:#1e2d47;--warn:#f97066;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:16px}
+.wrap{max-width:560px;margin:0 auto}
+h1{font-size:1.3rem;margin:4px 0 12px}
+p.sub{color:var(--mut);margin:0 0 16px;font-size:.9rem}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.seg{display:inline-flex;border:1px solid var(--bd);border-radius:10px;overflow:hidden;background:var(--card)}
+.seg button{font:inherit;font-size:.9rem;padding:8px 14px;border:0;background:none;color:var(--mut);cursor:pointer}
+.seg button.on{background:var(--acbg);color:var(--ac);font-weight:600}
+.shp{grid-column:1/3;padding:8px 0 0}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:8px 16px}
+.card+.card{margin-top:12px}
+.card.g{display:grid;grid-template-columns:1fr 1fr;column-gap:16px}
+.card>.row{grid-column:1/3;min-width:0}
+#rW{grid-column:1}#rH{grid-column:2}
+@media (max-width:480px){#rW,#rH{grid-column:1/3}}
+.row{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--bd)}
+.row:last-child,.row.nb{border-bottom:0}
+.row .n{font:inherit;font-weight:600;background:none;border:0;padding:4px 8px;margin:-4px -8px;border-radius:6px;color:var(--tx);cursor:pointer;text-align:left;justify-self:start}
+.row .n:hover{background:var(--acbg)}
+.row.sel .n{color:var(--ac)}
+.row.sel .n::after{content:" – počítá se";font-weight:400;font-size:.85rem}
+.in{display:flex;align-items:center;gap:8px;grid-column:1/3}
+input[type=text]{flex:1;min-width:0;font:inherit;font-size:1.1rem;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)}
+input[type=text]:focus{outline:2px solid var(--ac);border-color:var(--ac)}
+input[readonly]{background:var(--acbg);border-color:var(--ac);font-weight:700}
+.st{display:flex;flex-direction:column;gap:2px}.st button{width:38px;height:22px;padding:0;border:1px solid var(--bd);border-radius:6px;background:var(--card);color:var(--tx);font-size:.7rem;line-height:1;cursor:pointer}.st button:hover:not(:disabled){border-color:var(--ac);color:var(--ac)}.st button:disabled{opacity:.35;cursor:default}
+.u{width:40px;color:var(--mut);font-size:.9rem}
+.fld{position:relative;flex:1;display:flex;min-width:0}
+.fld:has(.dd) input{padding-right:40px}
+.dd{position:absolute;right:3px;top:3px;bottom:3px;width:32px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--mut);font:inherit;font-size:.9rem;cursor:pointer;appearance:none;-webkit-appearance:none;text-align:center;text-align-last:center}.dd:hover:not(:disabled){background:var(--acbg);color:var(--ac)}.dd:disabled{opacity:.35;cursor:default}
+.dd option{color:var(--tx);background:var(--card)}
+.info{margin-top:14px;padding:12px 16px;border:1px dashed var(--bd);border-radius:12px;font-size:.92rem;color:var(--mut)}
+.info b{color:var(--tx)}
+.viz{grid-column:1/3;display:flex;align-items:center;justify-content:center;gap:20px;min-height:120px;padding:14px 0 8px}
+.vr{border:2px solid var(--ac);background:repeating-linear-gradient(to bottom,transparent 0 calc(var(--p) - 1px),color-mix(in srgb,var(--ac) 55%,transparent) calc(var(--p) - 1px) var(--p)),var(--acbg);border-radius:3px;flex:none}
+.vr.nl{background:var(--acbg)}
+.vr.c{width:90px;height:90px;border-radius:50%}
+.vt{font-size:1.5rem;font-weight:700;white-space:nowrap}
+.vt small{display:block;font-size:.75rem;font-weight:400;color:var(--mut)}
+.warn{color:var(--warn);font-weight:600}
+.rt{width:100%;border-collapse:collapse;margin-top:8px;text-align:center}
+.rt caption{text-align:left;font-size:.85rem;padding-bottom:4px}
+.rt th{font-weight:500;font-size:.8rem;color:var(--mut);padding:4px 6px;border-bottom:1px solid var(--bd)}
+.rt td{padding:8px 6px;color:var(--tx);font-weight:400}
+.rt small{display:block;font-weight:400;color:var(--mut);font-size:.75rem}
+.rt tr.hi td{font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Kalkulačka VZT</h1>
+<div class="tabs">
+ <div class="seg" id="segK"><button data-k="duct">Potrubí</button><button data-k="grille">Mřížka</button></div>
+</div>
+<p class="sub">Zvolte veličinu, kterou chcete vypočítat, kliknutím na její název; ostatní zadejte.</p>
+<div id="card"></div>
+<div class="info" id="info"></div>
+<p class="sub" id="foot" style="margin-top:12px"></p>
+</div>
+<script>
+// Rozměrové řady potrubí [mm]
+const SER={
+ rect:[75,100,125,160,200,225,250,315,355,400,450,500,560,630,710,800,900,1000,1120,1250,1400,1600,1800,2000,2240,2500],
+ round:[80,100,125,160,200,250,315,400,500,630,800,1000,1250]
+};
+const STEP={Q:25,W:25,H:25,E:5,V:0.1};
+const UN={W:'mm',H:'mm',D:'mm',E:'%',Q:'m³/h',V:'m/s'};
+let kind='duct',shape='rect',mode='W';
+const vals={Q:'1000',W:'500',H:'300',E:'70',V:'2,5',D:'315'};
+const card=document.getElementById('card'),info=document.getElementById('info'),foot=document.getElementById('foot');
+const fields=()=>kind==='grille'?['W','H','E','Q','V']:shape==='rect'?['W','H','Q','V']:['D','Q','V'];
+const isDim=k=>k==='W'||k==='H'||k==='D';
+const ser=()=>shape==='round'?SER.round:SER.rect;
+const name=k=>({W:'Šířka',H:'Výška',D:'Průměr',E:'Efektivní plocha',Q:'Průtok vzduchu',V:'Rychlost proudění'}[k])+(isDim(k)?(kind==='grille'?' mřížky':' potrubí'):'');
+const el=k=>document.getElementById('i'+k);
+const num=k=>{const x=parseFloat(el(k).value.replace(/\s/g,'').replace(',','.'));return isFinite(x)&&x>0?x:null};
+const fmt=(x,d)=>x.toLocaleString('cs-CZ',{maximumFractionDigits:d});
+const dec=(k,x)=>k==='Q'?(x<100?1:0):(k==='V'?2:1);
+const setVal=(k,s)=>{vals[k]=s;el(k).value=s};
+
+function row(k,nb){
+ const sel=kind==='duct'&&isDim(k);
+ return `<div class="row${nb?' nb':''}" id="r${k}"><button type="button" class="n" data-m="${k}" title="Kliknutím zvolíte tuto veličinu k výpočtu">${name(k)}</button>
+<div class="in"><div class="fld"><input type="text" inputmode="decimal" id="i${k}" value="${vals[k]}" autocomplete="off">${sel?`<select class="dd" data-k="${k}" aria-label="Vybrat z řady rozměrů" title="Vybrat z řady rozměrů"><option value="" selected>▾</option>${ser().map(s=>`<option value="${s}">${s} mm</option>`).join('')}</select>`:''}</div><div class="st"><button type="button" data-k="${k}" data-d="1" aria-label="Zvýšit">▲</button><button type="button" data-k="${k}" data-d="-1" aria-label="Snížit">▼</button></div><span class="u">${UN[k]}</span></div></div>`;
+}
+function build(){
+ const fs=fields();
+ if(!fs.includes(mode))mode=(kind==='duct'&&shape==='round')?'D':'W';
+ const dims=fs.filter(isDim);
+ const last=kind==='grille'?['E']:dims;
+ const g=fs.filter(k=>k!=='Q'&&k!=='V');
+ card.innerHTML='<div class="card g">'+(kind==='duct'?'<div class="shp"><div class="seg" id="segS"><button data-s="rect">Čtyřhranné</button><button data-s="round">Kruhové</button></div></div>':'')+g.map(k=>row(k,last.includes(k))).join('')+'<div class="viz" id="viz"></div></div><div class="card">'+row('Q')+row('V')+'</div>';
+ document.querySelectorAll('#segK button').forEach(b=>b.classList.toggle('on',b.dataset.k===kind));
+ document.querySelectorAll('#segS button').forEach(b=>b.classList.toggle('on',b.dataset.s===shape));
+ document.querySelectorAll('#segS button').forEach(b=>b.addEventListener('click',()=>{shape=b.dataset.s;build();calc()}));
+ foot.textContent=kind==='grille'?'Vztah: Q / 3600 = v · (š · vý / 10⁶) · (ef / 100); Q v m³/h, š a vý v mm, v v m/s.':shape==='rect'?'Vztah: Q / 3600 = v · š · vý / 10⁶; Q v m³/h, š a vý v mm, v v m/s.':'Vztah: Q / 3600 = v · π · D² / 4 / 10⁶; Q v m³/h, D v mm, v v m/s.';
+ document.querySelectorAll('button.n').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.m;calc()}));
+ document.querySelectorAll('.st button').forEach(b=>b.addEventListener('click',()=>stepBy(b.dataset.k,+b.dataset.d)));
+ document.querySelectorAll('select.dd').forEach(s=>s.addEventListener('change',()=>{if(!s.value)return;setVal(s.dataset.k,fmt(+s.value,0));s.value='';calc()}));
+ fs.forEach(k=>{
+  el(k).addEventListener('input',()=>{vals[k]=el(k).value;calc()});
+  el(k).addEventListener('keydown',e=>{if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();stepBy(k,e.key==='ArrowUp'?1:-1)}});
+ });
+}
+function area(t){
+ if(kind==='grille')return t.W*t.H/1e6*t.E/100;
+ if(shape==='rect')return t.W*t.H/1e6;
+ return Math.PI*t.D*t.D/4/1e6;
+}
+function solve(t){
+ const q=t.Q/3600;
+ switch(mode){
+  case 'Q':return t.V*area(t)*3600;
+  case 'V':return q/area(t);
+  case 'E':return q/t.V/(t.W*t.H/1e6)*100;
+  case 'D':return Math.sqrt(4*q/t.V*1e6/Math.PI);
+  case 'W':return q/t.V/(kind==='grille'?t.E/100:1)*1e6/t.H;
+  case 'H':return q/t.V/(kind==='grille'?t.E/100:1)*1e6/t.W;
+ }
+}
+function stepBy(k,d){
+ if(k===mode)return;
+ const x=num(k)||0;
+ if(kind==='duct'&&isDim(k)){
+  const s=ser(),n=d>0?s.find(a=>a>x+1e-9):[...s].reverse().find(a=>a<x-1e-9);
+  if(n==null)return;
+  setVal(k,fmt(n,0));
+ }else{
+  const s=STEP[k],r=x/s,n=d>0?Math.floor(r+1e-9)+1:Math.ceil(r-1e-9)-1;
+  if(n<1)return;
+  setVal(k,fmt(Math.round(n*s*100)/100,2));
+ }
+ calc();
+}
+function calc(){
+ const fs=fields(),viz=document.getElementById('viz');
+ fs.forEach(k=>{
+  el(k).readOnly=k===mode;
+  document.querySelectorAll('.st button[data-k="'+k+'"]').forEach(b=>b.disabled=k===mode);
+  document.querySelectorAll('.dd[data-k="'+k+'"]').forEach(b=>b.disabled=k===mode);
+  document.getElementById('r'+k).classList.toggle('sel',k===mode);
+ });
+ const t={};fs.forEach(k=>t[k]=num(k));
+ const miss=fs.filter(k=>k!==mode&&t[k]===null);
+ if(miss.length){setVal(mode,'');viz.innerHTML='';info.innerHTML='Zadejte kladné hodnoty: '+miss.map(k=>name(k).toLowerCase()).join(', ')+'.';return}
+ const r=solve(t);
+ setVal(mode,fmt(r,dec(mode,r)));
+ t[mode]=r;
+ const A=area(t);
+ let s;
+ if(kind==='grille'){
+  const gross=t.W*t.H/1e6;
+  s=`Celková plocha: <b>${fmt(gross*1e4,1)} cm²</b> · Efektivní plocha: <b>${fmt(A*1e4,1)} cm²</b> (${fmt(A,4)} m²)<br>Rychlost v celé ploše mřížky: <b>${fmt(t.Q/3600/gross,2)} m/s</b>`;
+  if(t.E>100)s+=`<br><span class="warn">Efektivní plocha přesahuje 100 % – zvětšete mřížku nebo snižte průtok či rychlost.</span>`;
+ }else s=`Průřez potrubí: <b>${fmt(A*1e4,1)} cm²</b> (${fmt(A,4)} m²)`;
+ // Tabulka zaokrouhlení rozměru
+ if(isDim(mode)){
+  let up,dn;
+  if(kind==='grille'){up=Math.ceil(r/25-1e-9)*25;dn=Math.floor(r/25+1e-9)*25;if(dn<=0)dn=null}
+  else{const a=ser();up=a.find(x=>x>=r-1e-9);dn=[...a].reverse().find(x=>x<=r+1e-9)}
+  const vel=w=>t.Q/3600/area({...t,[mode]:w});
+  const dist=w=>w==null?Infinity:Math.abs(vel(w)-t.V);
+  const hi=dist(dn)<dist(up)?'dn':'up';
+  const c=k=>k===hi?' class="hi"':'';
+  const cell=(w,lab)=>w==null?`<td>—<small>${lab}</small></td><td>—</td>`:`<td>${fmt(w,0)}<small>${lab}</small></td><td>${fmt(vel(w),2)}</td>`;
+  const what=mode==='W'?'šířky':mode==='H'?'výšky':'průměru';
+  s+=`<table class="rt"><caption>Rychlost proudění při zaokrouhlení ${what} ${kind==='grille'?'mřížky na 25 mm':'na standardní rozměr'}</caption><tr><th>Rozměr [mm]</th><th>Rychlost [m/s]</th></tr><tr${c('up')}>${cell(up,'zaokrouhleno nahoru')}</tr><tr><td>${fmt(r,1)}<small>nezaokrouhleno</small></td><td>${fmt(t.V,2)}</td></tr><tr${c('dn')}>${cell(dn,'zaokrouhleno dolů')}</tr></table>`;
+ }
+ info.innerHTML=s;
+ // Vizualizace
+ if(kind==='duct'&&shape==='round'){
+  viz.innerHTML=`<div class="vr c nl"></div><div class="vt">Ø ${fmt(t.D,1)}<small>průměr [mm]</small></div>`;
+ }else{
+  const sc=Math.min(180/t.W,90/t.H);
+  viz.innerHTML=`<div class="vr${kind==='grille'?'':' nl'}" style="--p:6px;width:${Math.max(t.W*sc,4)}px;height:${Math.max(t.H*sc,4)}px"></div><div class="vt">${t.W>=t.H?fmt(t.W/t.H,1)+':1':'1:'+fmt(t.H/t.W,1)}<small>poměr stran</small></div>`;
+ }
+}
+document.querySelectorAll('#segK button').forEach(b=>b.addEventListener('click',()=>{kind=b.dataset.k;build();calc()}));
+build();calc();
+</script>
+</body>
+</html>
