@@ -1,0 +1,1 @@
+Kalkulačka dimenzí vzduchotechnického potrubí
